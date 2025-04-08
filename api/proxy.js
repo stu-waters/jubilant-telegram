@@ -6,23 +6,31 @@ export default async function handler(req, res) {
   const SUPABASE_URL = 'https://qbdpekfscbosrxwbkcdr.supabase.co/rest/v1/email_send';
   const SUPABASE_API_KEY = process.env.SUPABASE_API_KEY;
 
-  // Parse the raw request body
+  // 🛡 Catch-all raw body handler
   const buffers = [];
   for await (const chunk of req) {
     buffers.push(chunk);
   }
 
+  const rawBody = Buffer.concat(buffers).toString();
+  console.log('📥 Raw body received:', rawBody);
+
   let parsedBody;
   try {
-    const rawBody = Buffer.concat(buffers).toString();
     parsedBody = JSON.parse(rawBody);
+    console.log('✅ Parsed JSON:', parsedBody);
   } catch (err) {
-    return res.status(400).json({ error: 'Invalid JSON body' });
+    console.error('❌ Failed to parse JSON:', err.message);
+    return res.status(400).json({ error: 'Invalid JSON format', raw: rawBody });
+  }
+
+  // Optional field cleanup/transform:
+  if ('campaign-name' in parsedBody) {
+    parsedBody.campaign_name = parsedBody['campaign-name'];
+    delete parsedBody['campaign-name'];
   }
 
   try {
-    console.log('Incoming body:', parsedBody); // ✅ Will now actually log something
-
     const response = await fetch(SUPABASE_URL, {
       method: 'POST',
       headers: {
@@ -35,12 +43,13 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errorBody = await response.text();
+      console.error('❌ Supabase rejected:', errorBody);
       return res.status(response.status).json({ error: 'Supabase error', details: errorBody });
     }
 
     return res.status(200).json({ status: 'Forwarded to Supabase' });
   } catch (err) {
-    console.error('Proxy error:', err);
-    return res.status(500).json({ error: 'Internal error', details: err.message });
+    console.error('💥 Unexpected Proxy Error:', err.message);
+    return res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 }
