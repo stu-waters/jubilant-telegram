@@ -24,21 +24,25 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid JSON format', raw: rawBody });
   }
 
-  // 🛠 Field mapping to clean up keys
-  const fieldMap = {
-    'Contact owner': 'contact_owner',
-    'firstName': 'first_name',
-    'lastName': 'last_name',
-    'companyName': 'company_name',
-    'Industry': 'industry'
+  // 🧹 Whitelist and clean only the fields we want
+  const cleanedBody = {
+    timestamp: parsedBody.timestamp,
+    event_type: parsedBody.event_type,
+    campaign_id: parsedBody.campaign_id,
+    campaign_name: parsedBody.campaign_name,
+    email_account: parsedBody.email_account,
+    email: parsedBody.email,
+    lead_email: parsedBody.lead_email,
+    step: parsedBody.step,
+    variant: parsedBody.variant,
+    email_subject: parsedBody.email_subject,
+    email_html: parsedBody.email_html,
+    first_name: parsedBody.first_name || parsedBody['firstName'],
+    last_name: parsedBody.last_name || parsedBody['lastName'],
+    company_name: parsedBody.company_name || parsedBody['companyName'],
+    contact_owner: parsedBody.contact_owner || parsedBody['Contact owner'],
+    industry: parsedBody.industry || parsedBody['Industry']
   };
-
-  for (const [original, cleaned] of Object.entries(fieldMap)) {
-    if (original in parsedBody) {
-      parsedBody[cleaned] = parsedBody[original];
-      delete parsedBody[original];
-    }
-  }
 
   try {
     const response = await fetch(SUPABASE_URL, {
@@ -48,7 +52,7 @@ export default async function handler(req, res) {
         'apikey': SUPABASE_API_KEY,
         'Prefer': 'return=minimal'
       },
-      body: JSON.stringify(parsedBody)
+      body: JSON.stringify(cleanedBody)
     });
 
     if (!response.ok) {
