@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   const SUPABASE_URL = 'https://qbdpekfscbosrxwbkcdr.supabase.co/rest/v1/email_send';
   const SUPABASE_API_KEY = process.env.SUPABASE_API_KEY;
 
-  // 🛡 Catch-all raw body handler
+  // 🧠 Manually parse raw body
   const buffers = [];
   for await (const chunk of req) {
     buffers.push(chunk);
@@ -23,17 +23,21 @@ export default async function handler(req, res) {
     console.error('❌ Failed to parse JSON:', err.message);
     return res.status(400).json({ error: 'Invalid JSON format', raw: rawBody });
   }
-  // Rename fields with invalid SQL names
-if ('Contact owner' in parsedBody) {
-  parsedBody.contact_owner = parsedBody['Contact owner'];
-  delete parsedBody['Contact owner'];
-}
 
+  // 🛠 Field mapping to clean up keys
+  const fieldMap = {
+    'Contact owner': 'contact_owner',
+    'firstName': 'first_name',
+    'lastName': 'last_name',
+    'companyName': 'company_name',
+    'Industry': 'industry'
+  };
 
-  // Optional field cleanup/transform:
-  if ('campaign-name' in parsedBody) {
-    parsedBody.campaign_name = parsedBody['campaign-name'];
-    delete parsedBody['campaign-name'];
+  for (const [original, cleaned] of Object.entries(fieldMap)) {
+    if (original in parsedBody) {
+      parsedBody[cleaned] = parsedBody[original];
+      delete parsedBody[original];
+    }
   }
 
   try {
