@@ -6,8 +6,22 @@ export default async function handler(req, res) {
   const SUPABASE_URL = 'https://qbdpekfscbosrxwbkcdr.supabase.co/rest/v1/email_send';
   const SUPABASE_API_KEY = process.env.SUPABASE_API_KEY;
 
+  // Parse the raw request body
+  const buffers = [];
+  for await (const chunk of req) {
+    buffers.push(chunk);
+  }
+
+  let parsedBody;
   try {
-    console.log('Incoming body:', req.body); // 👈 Add this line to inspect the payload
+    const rawBody = Buffer.concat(buffers).toString();
+    parsedBody = JSON.parse(rawBody);
+  } catch (err) {
+    return res.status(400).json({ error: 'Invalid JSON body' });
+  }
+
+  try {
+    console.log('Incoming body:', parsedBody); // ✅ Will now actually log something
 
     const response = await fetch(SUPABASE_URL, {
       method: 'POST',
@@ -16,7 +30,7 @@ export default async function handler(req, res) {
         'apikey': SUPABASE_API_KEY,
         'Prefer': 'return=minimal'
       },
-      body: JSON.stringify(req.body)
+      body: JSON.stringify(parsedBody)
     });
 
     if (!response.ok) {
@@ -26,7 +40,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ status: 'Forwarded to Supabase' });
   } catch (err) {
-    console.error('Proxy error:', err); // 👈 Log the actual error
+    console.error('Proxy error:', err);
     return res.status(500).json({ error: 'Internal error', details: err.message });
   }
 }
