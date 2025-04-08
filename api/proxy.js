@@ -1,5 +1,3 @@
-// File: api/proxy.js
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -9,12 +7,14 @@ export default async function handler(req, res) {
   const SUPABASE_API_KEY = process.env.SUPABASE_API_KEY;
 
   try {
+    console.log('Incoming body:', req.body); // 👈 Add this line to inspect the payload
+
     const response = await fetch(SUPABASE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': SUPABASE_API_KEY,
-        'Prefer': 'return=minimal' // Optional: tells Supabase not to return full row
+        'Prefer': 'return=minimal'
       },
       body: JSON.stringify(req.body)
     });
@@ -26,6 +26,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ status: 'Forwarded to Supabase' });
   } catch (err) {
+    console.error('Proxy error:', err); // 👈 Log the actual error
     return res.status(500).json({ error: 'Internal error', details: err.message });
   }
 }
