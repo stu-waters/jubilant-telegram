@@ -23,6 +23,12 @@ export default async function handler(req, res) {
     console.error('❌ Failed to parse JSON:', err.message);
     return res.status(400).json({ error: 'Invalid JSON format', raw: rawBody });
   }
+  // Rename fields with invalid SQL names
+if ('Contact owner' in parsedBody) {
+  parsedBody.contact_owner = parsedBody['Contact owner'];
+  delete parsedBody['Contact owner'];
+}
+
 
   // Optional field cleanup/transform:
   if ('campaign-name' in parsedBody) {
