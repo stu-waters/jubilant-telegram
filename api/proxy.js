@@ -25,24 +25,27 @@ export default async function handler(req, res) {
   }
 
   // 🧹 Whitelist and clean only the fields we want
-  const cleanedBody = {
-    timestamp: parsedBody.timestamp,
-    event_type: parsedBody.event_type,
-    campaign_id: parsedBody.campaign_id,
-    campaign_name: parsedBody.campaign_name,
-    email_account: parsedBody.email_account,
-    email: parsedBody.email,
-    lead_email: parsedBody.lead_email,
-    step: parsedBody.step,
-    variant: parsedBody.variant,
-    email_subject: parsedBody.email_subject,
-    email_html: parsedBody.email_html,
-    first_name: parsedBody.first_name || parsedBody['firstName'],
-    last_name: parsedBody.last_name || parsedBody['lastName'],
-    company_name: parsedBody.company_name || parsedBody['companyName'],
-    contact_owner: parsedBody.contact_owner || parsedBody['Contact owner'],
-    industry: parsedBody.industry || parsedBody['Industry']
-  };
+const cleanedBody = {
+  timestamp: parsedBody.timestamp,
+  event_type: parsedBody.event_type,
+  campaign_id: parsedBody.campaign_id,
+  campaign_name: parsedBody.campaign_name,
+  email_account: parsedBody.email_account,
+  email: parsedBody.email,
+  lead_email: parsedBody.lead_email,
+  step: parsedBody.step,
+  variant: parsedBody.variant,
+  email_subject: parsedBody.email_subject,
+  email_html: parsedBody.email_html,
+  first_name: parsedBody.first_name || parsedBody['firstName'],
+  last_name: parsedBody.last_name || parsedBody['lastName'],
+  company_name: parsedBody.company_name || parsedBody['companyName'],
+  contact_owner: parsedBody.contact_owner || parsedBody['Contact owner'],
+  industry: parsedBody.industry || parsedBody['Industry'],
+  is_first: parsedBody.is_first,         // <- pull directly from Instantly
+  source: 'instantly'                    // <- explicitly tag the source
+};
+
 
   try {
     const response = await fetch(SUPABASE_URL, {
