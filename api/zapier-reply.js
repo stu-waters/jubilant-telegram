@@ -16,8 +16,7 @@ export default async function handler(req, res) {
       reply_text,
       timestamp,
       campaign_name,
-      disposition,
-      source = 'zapier',
+      disposition
     } = req.body;
 
     if (!email || !reply_text || !timestamp || !disposition) {
@@ -31,18 +30,18 @@ export default async function handler(req, res) {
         timestamp,
         campaign_name,
         disposition,
-        source,
-      },
+        source: 'instantly'  // 👈 hardcoded here
+      }
     ]);
 
     if (error) {
-      console.error('Supabase insert error:', error);
+      console.error('❌ Supabase insert error:', error);
       return res.status(500).json({ error: 'Insert failed' });
     }
 
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error('Unexpected error:', err);
+    console.error('🔥 Unexpected error:', err);
     return res.status(500).json({ error: 'Unexpected error' });
   }
 }
