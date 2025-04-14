@@ -14,12 +14,7 @@ export default async function handler(req, res) {
 
   try {
     const body = req.body;
-
-    // Add this line inside the try block, before inserting
-console.log('Payload:', body);
-
-    console.error('Unexpected error:', err);
-
+    console.log('Payload:', body);
 
     // Extract fields from Smartlead reply payload
     const email = body.sl_lead_email || body.to_email;
