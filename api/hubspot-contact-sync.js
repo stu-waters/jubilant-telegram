@@ -3,34 +3,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Only POST allowed' });
   }
 
-  const { email, hubspot_owner_id } = req.body;
+  const { email, contact_owner } = req.body;
 
-  if (!email || !hubspot_owner_id) {
-    return res.status(400).json({ error: 'Missing email or owner ID' });
+  if (!email || !contact_owner) {
+    return res.status(400).json({ error: 'Missing email or contact_owner' });
   }
 
   try {
-    // Step 1: Get owner info from HubSpot
-    const ownerResp = await fetch(
-      `https://api.hubapi.com/crm/v3/owners/${hubspot_owner_id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    if (!ownerResp.ok) {
-      throw new Error(`HubSpot fetch failed with ${ownerResp.status}`);
-    }
-
-    const owner = await ownerResp.json();
-    const contact_owner = owner.firstName
-      ? `${owner.firstName} ${owner.lastName || ''}`.trim()
-      : owner.email || 'Unknown';
-
-    // Step 2: Upsert into Supabase
     const supabaseResp = await fetch(
       `${process.env.SUPABASE_URL}/rest/v1/contact_owner_lookup`,
       {
@@ -58,3 +37,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Failed to sync contact owner' });
   }
 }
+
