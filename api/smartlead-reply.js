@@ -21,9 +21,10 @@ export default async function handler(req, res) {
     });
   }
 
-  try {
-    const { createClient } = require('@supabase/supabase-js');
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+  const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
     const { error } = await supabase.from('email_reply').insert([
       {
