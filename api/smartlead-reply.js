@@ -6,15 +6,14 @@ export default async function handler(req, res) {
   const body = req.body;
   console.log('Incoming Smartlead payload:', JSON.stringify(body, null, 2));
 
-  // Extract values
-  const email = body.sl_lead_email || body.to_email || null;
-  const timestamp = body.reply_message2?.time || null;
-  const reply_text = body.reply_message2?.text || null;
-  const campaign_name = body.campaign || null;
+  // Flexible extraction
+  const email = body.email || body.sl_lead_email || body.to_email || null;
+  const timestamp = body.timestamp || body.reply_message2?.time || null;
+  const reply_text = body.reply_text || body.reply_message2?.text || null;
+  const campaign_name = body.campaign_name || body.campaign || null;
   const disposition = body.disposition || null;
   const source = 'smartlead';
 
-  // Validate required fields
   if (!email || !timestamp || !reply_text) {
     return res.status(400).json({
       error: 'Missing required fields',
@@ -22,7 +21,6 @@ export default async function handler(req, res) {
     });
   }
 
-  // Insert into Supabase
   try {
     const { createClient } = require('@supabase/supabase-js');
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
@@ -49,3 +47,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Unexpected server error', details: err.message });
   }
 }
+
